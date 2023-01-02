@@ -1,0 +1,54 @@
+---
+name: snyk-scan
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "develop"
+      - "main"
+
+jobs:
+  scan-job:
+    name: scan-job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ceckout repository
+        uses: actions/checkout@v3
+
+      - name: Download rules_proto
+        run: |
+          curl -OL https://github.com/bazelbuild/rules_proto/archive/refs/tags/4.0.0-3.19.2-2.tar.gz
+          tar xfzv 4.0.0-3.19.2-2.tar.gz
+
+      - name: Download com_github_protocoluffers_protobuf
+        run: |
+          curl -OL https://github.com/protocolbuffers/protobuf/archive/v3.19.2.tar.gz
+          tar xfzv v3.19.2.tar.gz
+
+      - name: Download com_github_grpc_grpc
+        run: |
+          curl -OL https://github.com/grpc/grpc/archive/2717aa8c9b768de99c811628af4e8c30d6c2da4f.tar.gz
+          tar xfzv 2717aa8c9b768de99c811628af4e8c30d6c2da4f.tar.gz
+
+      - name: Setup SNYK
+        run: |
+          curl https://static.snyk.io/cli/latest/snyk-linux -o snyk
+          chmod +x ./snyk
+          ./snyk auth ${{ secrets.SNYK_API_TOKEN }}
+
+      - name: Scan source
+        run: |
+          ./snyk test --unmanaged --all-projects --json-file-output=vuln.json
+          ./snyk monitor --unmanaged
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Results file
+          path: vuln.json
+
+      - name: Clean workspace
+        if: ${{ always() }}
+        run: |
+          chmod +w ${{github.workspace}} -Rf
+          rm -rf ${{github.workspace}}/*
