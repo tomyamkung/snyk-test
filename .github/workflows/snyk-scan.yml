@@ -20,7 +20,7 @@ jobs:
           curl -OL https://github.com/bazelbuild/rules_proto/archive/refs/tags/4.0.0-3.19.2-2.tar.gz
           tar xfzv 4.0.0-3.19.2-2.tar.gz
 
-      - name: Download com_github_protocoluffers_protobuf
+      - name: Download com_github_protocolbuffers_protobuf
         run: |
           curl -OL https://github.com/protocolbuffers/protobuf/archive/v3.19.2.tar.gz
           tar xfzv v3.19.2.tar.gz
